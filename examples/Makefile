@@ -1,6 +1,6 @@
 .POSIX:
 
-CFLAGS = -g -O0 -I..
+CFLAGS = -O2 -I.. -Wall
 
 .PHONY: all
 all: jpp app_menu

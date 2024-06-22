@@ -1280,24 +1280,32 @@ json_writer_write_array_value_separator(JSON* state) {
 
 PVJDEF JsonError
 json_writer_write_numberi(JSON* state, int value) {
+    int n = fprintf(state->_file, "%d", value);
+    if (n < 0) { return JsonError_write; }
     return JsonError_ok;
 }
 
 
 PVJDEF JsonError
-json_writer_write_numberl(JSON* context, long value) {
+json_writer_write_numberl(JSON* state, long value) {
+    int n = fprintf(state->_file, "%ld", value);
+    if (n < 0) { return JsonError_write; }
     return JsonError_ok;
 }
 
 
 PVJDEF JsonError
-json_writer_write_numberll(JSON* context, long long value) {
+json_writer_write_numberll(JSON* state, long long value) {
+    int n = fprintf(state->_file, "%lld", value);
+    if (n < 0) { return JsonError_write; }
     return JsonError_ok;
 }
 
 
 PVJDEF JsonError
-json_writer_write_numberf(JSON* context, float value) {
+json_writer_write_numberf(JSON* state, float value) {
+    int n = fprintf(state->_file, "%g", value);
+    if (n < 0) { return JsonError_write; }
     return JsonError_ok;
 }
 
@@ -1311,7 +1319,9 @@ json_writer_write_numberd(JSON* state, double value) {
 
 
 PVJDEF JsonError
-json_writer_write_numberld(JSON* context, long double value) {
+json_writer_write_numberld(JSON* state, long double value) {
+    int n = fprintf(state->_file, "%Lg", value);
+    if (n < 0) { return JsonError_write; }
     return JsonError_ok;
 }
 
