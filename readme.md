@@ -21,7 +21,7 @@ Refer to examples for a sample code.
 
 Basic parser structure:
 ```
-json_parser_init
+json_reader_init
 json_reader_open_object
   json_reader_read_object until JsonError_not_found
   json_reader_read_ [string, number*, bool, null]
