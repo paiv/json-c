@@ -155,7 +155,7 @@ _json_parser_read_token(JSON* state, FILE* fp, _TokenType* token) {
                 return JsonError_eof;
             default: {
                 state->_parser_char = c;
-                _TokenType t;
+                _TokenType t = _TokenType_invalid;
                 switch (c) {
                     case '{':
                         t = _TokenType_object_open;
@@ -237,7 +237,7 @@ _json_parser_peek_token(JSON* state, FILE* fp, _TokenType* token) {
                 return JsonError_eof;
             default: {
                 ungetc(c, fp);
-                _TokenType t;
+                _TokenType t = _TokenType_invalid;
                 switch (c) {
                     case '{':
                         t = _TokenType_object_open;
@@ -274,7 +274,6 @@ _json_parser_peek_token(JSON* state, FILE* fp, _TokenType* token) {
                         t = _TokenType_null_value;
                         break;
                     default:
-                        t = _TokenType_invalid;
                         break;
                 }
                 *token = t;
