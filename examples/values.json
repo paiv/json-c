@@ -1,0 +1,13 @@
+[
+    null,
+    false,
+    true,
+    "hello",
+    "",
+    "\b\t\n\f\r\"\\\//\u0024",
+    42, 3.5, -10, 31415e-4,
+    [-0.0271828e+2, null, "world!"],
+    [],
+    [[[], []]],
+    {"answer": 37, "question": null, "context": {"key": "value"}}
+]
