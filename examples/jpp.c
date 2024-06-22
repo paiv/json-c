@@ -306,7 +306,9 @@ int main(int argc, const char* argv[]) {
         err = jfilter_value(&jreader, &jwriter, &context);
         guard_ok(err);
 
-        fclose(fp);
+        if (fp != stdin) {
+            fclose(fp);
+        }
         puts("");
     }
     return 0;
