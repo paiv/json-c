@@ -240,12 +240,38 @@ test5() {
 }
 
 
+static void
+test6() {
+    cs* data = R"(
+    "long \u006c\u006F\u006e\u0067 long string"
+    )";
+    test_reader("test6.json", data, [] (JSON* json) {
+        size_t chunk = 4;
+        char buf[100];
+        size_t bufsize = chunk;
+        JsonError err = json_reader_read_string(json, &bufsize, buf);
+        assert(err == JsonError_bufsize);
+        size_t offset = bufsize;
+        for (;;) {
+            assert(offset + chunk <= sizeof(buf));
+            bufsize = chunk;
+            err = json_reader_resume_string(json, &bufsize, &buf[offset]);
+            if (err == JsonError_ok) { break; }
+            assert(err == JsonError_bufsize);
+            offset += bufsize;
+        }
+        assert(strcmp(buf, "long long long string") == 0);
+    });
+}
+
+ 
 int main(int argc, const char* argv[]) {
     test1();
     test2();
     test3();
     test4();
     test5();
+    test6();
 
     return 0;
 }

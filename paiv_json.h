@@ -83,6 +83,7 @@ PVJDEF JsonError json_reader_read_numberf(JSON* context, float* value);
 PVJDEF JsonError json_reader_read_numberd(JSON* context, double* value);
 PVJDEF JsonError json_reader_read_numberld(JSON* context, long double* value);
 PVJDEF JsonError json_reader_read_string(JSON* context, size_t* buf_size, char* buf);
+PVJDEF JsonError json_reader_resume_string(JSON* context, size_t* buf_size, char* buf);
 PVJDEF JsonError json_reader_read_bool(JSON* context, int* value);
 PVJDEF JsonError json_reader_read_null(JSON* context);
 PVJDEF JsonError json_reader_consume_value(JSON* context);
@@ -304,6 +305,8 @@ _json_parser_read_string(JSON* _, FILE* fp, size_t* buf_size, char* buf) {
                             return JsonError_ok;
                         }
                         else {
+                            ungetc(c, fp);
+                            *buf_size = count;
                             return JsonError_bufsize;
                         }
                         break;
@@ -321,6 +324,8 @@ _json_parser_read_string(JSON* _, FILE* fp, size_t* buf_size, char* buf) {
                             count++;
                         }
                         else {
+                            ungetc(c, fp);
+                            *buf_size = count;
                             return JsonError_bufsize;
                         }
                         break;
@@ -362,6 +367,8 @@ _json_parser_read_string(JSON* _, FILE* fp, size_t* buf_size, char* buf) {
                         state = 0;
                     }
                     else {
+                        fseek(fp, -2, SEEK_CUR);
+                        *buf_size = count;
                         return JsonError_bufsize;
                     }
                 }
@@ -415,6 +422,8 @@ _json_parser_read_string(JSON* _, FILE* fp, size_t* buf_size, char* buf) {
                     state = 0;
                 }
                 else {
+                    fseek(fp, -6, SEEK_CUR);
+                    *buf_size = count;
                     return JsonError_bufsize;
                 }
                 }
@@ -999,6 +1008,13 @@ json_reader_read_string(JSON* state, size_t* buf_size, char* buf) {
             return JsonError_type_mismatch;
     }
     err = _json_parser_read_string(state, state->_file, buf_size, buf);
+    return err;
+}
+
+
+PVJDEF JsonError
+json_reader_resume_string(JSON* state, size_t* buf_size, char* buf) {
+    JsonError err = _json_parser_read_string(state, state->_file, buf_size, buf);
     return err;
 }
 
