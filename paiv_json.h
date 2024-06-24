@@ -938,7 +938,12 @@ json_reader_read_numberi(JSON* state, int* value) {
     PAIV_JSON_NUMBER_BACKEND_TYPE signi, power;
     JsonError err = _json_reader_read_number(state, &signi, &power);
     if (err != JsonError_ok) { return err; }
-    *value = signi * pow(10, power);
+    if (power == 0) {
+        *value = signi;
+    }
+    else {
+        *value = signi * pow(10, power);
+    }
     return JsonError_ok;
 }
 
@@ -948,7 +953,12 @@ json_reader_read_numberl(JSON* state, long* value) {
     PAIV_JSON_NUMBER_BACKEND_TYPE signi, power;
     JsonError err = _json_reader_read_number(state, &signi, &power);
     if (err != JsonError_ok) { return err; }
-    *value = signi * pow(10, power);
+    if (power == 0) {
+        *value = signi;
+    }
+    else {
+        *value = signi * pow(10, power);
+    }
     return JsonError_ok;
 }
 
@@ -958,7 +968,12 @@ json_reader_read_numberll(JSON* state, long long* value) {
     PAIV_JSON_NUMBER_BACKEND_TYPE signi, power;
     JsonError err = _json_reader_read_number(state, &signi, &power);
     if (err != JsonError_ok) { return err; }
-    *value = signi * powl(10, power);
+    if (power == 0) {
+        *value = signi;
+    }
+    else {
+        *value = signi * powl(10, power);
+    }
     return JsonError_ok;
 }
 
@@ -1320,7 +1335,7 @@ json_writer_write_numberll(JSON* state, long long value) {
 
 PVJDEF JsonError
 json_writer_write_numberf(JSON* state, float value) {
-    int n = fprintf(state->_file, "%g", value);
+    int n = fprintf(state->_file, "%.7g", value);
     if (n < 0) { return JsonError_write; }
     return JsonError_ok;
 }
@@ -1328,7 +1343,7 @@ json_writer_write_numberf(JSON* state, float value) {
 
 PVJDEF JsonError
 json_writer_write_numberd(JSON* state, double value) {
-    int n = fprintf(state->_file, "%g", value);
+    int n = fprintf(state->_file, "%.16g", value);
     if (n < 0) { return JsonError_write; }
     return JsonError_ok;
 }
@@ -1336,7 +1351,7 @@ json_writer_write_numberd(JSON* state, double value) {
 
 PVJDEF JsonError
 json_writer_write_numberld(JSON* state, long double value) {
-    int n = fprintf(state->_file, "%Lg", value);
+    int n = fprintf(state->_file, "%.34Lg", value);
     if (n < 0) { return JsonError_write; }
     return JsonError_ok;
 }

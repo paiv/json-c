@@ -13,6 +13,7 @@ typedef uint32_t u32;
 typedef uint64_t u64;
 typedef int16_t i16;
 typedef int32_t i32;
+typedef int64_t i64;
 typedef float r32;
 typedef double r64;
 typedef const char cs;
@@ -69,7 +70,7 @@ test_reader(cs* filename, cs* data, Worker worker) {
 
 
 static void
-test1() {
+test1_hello() {
     cs* data = R"(
     "hello, world"
     )";
@@ -84,7 +85,7 @@ test1() {
 
 
 static void
-test2() {
+test2_objects() {
     cs* data = R"(
     {"answer": 4.2e1, "float": 24214.5525e-2 }
     )";
@@ -120,7 +121,7 @@ test2() {
 
 
 static void
-test3() {
+test3_arrays() {
     cs* data = R"(
     [[7, -11], [3.5, -1.5]]
     )";
@@ -154,7 +155,7 @@ test3() {
 
 
 static void
-test4() {
+test4_nulls() {
     cs* data = R"(
     [null, null, null, {"answer":null}]
     )";
@@ -201,7 +202,7 @@ test4() {
 
 
 static void
-test5() {
+test5_booleans() {
     cs* data = R"(
     [false, true, null, 1]
     )";
@@ -241,7 +242,7 @@ test5() {
 
 
 static void
-test6() {
+test6_chunked_read() {
     cs* data = R"(
     "long \u006c\u006F\u006e\u0067 long string"
     )";
@@ -264,14 +265,102 @@ test6() {
     });
 }
 
- 
+
+static void
+test7_numbers_i32() {
+    cs* data = R"(
+    [0, 1, -1, -2147483648, 2147483647, 4294967295]
+    )";
+    test_reader("test7.json", data, [] (JSON* json) {
+        i32 expect_s[] = {0, 1, -1, -2147483648, 2147483647, -1};
+        i32* pexpect = expect_s;
+        JSON array;
+        JsonValueType type;
+        JsonError err = json_reader_open_array(json, &array);
+        assert(err == JsonError_ok);
+        for (;;) {
+            err = json_reader_read_array(&array, &type);
+            if (err == JsonError_not_found) { break; }
+            assert(err == JsonError_ok);
+            int value;
+            err = json_reader_read_numberi(&array, &value);
+            assert(err == JsonError_ok);
+            assert(value == *pexpect++);
+        }
+    });
+}
+
+
+static void
+test8_numbers_i64() {
+    cs* data = R"(
+    [0, 1, -1, -2147483648, 2147483647, 4294967295,
+        -1234567890123456789, -9223372036854775808,
+        1234567890123456789, 9223372036854775807]
+    )";
+    test_reader("test8.json", data, [] (JSON* json) {
+        i64 expect_s[] = {0, 1, -1, -2147483648, 2147483647, 4294967295,
+            -1234567890123456789, INT64_MIN,
+            1234567890123456789, 9223372036854775807
+        };
+        i64* pexpect = expect_s;
+        JSON array;
+        JsonValueType type;
+        JsonError err = json_reader_open_array(json, &array);
+        assert(err == JsonError_ok);
+        for (;;) {
+            err = json_reader_read_array(&array, &type);
+            if (err == JsonError_not_found) { break; }
+            assert(err == JsonError_ok);
+            i64 value;
+            err = json_reader_read_numberll(&array, &value);
+            assert(err == JsonError_ok);
+            assert(value == *pexpect++);
+        }
+    });
+}
+
+
+static void
+test9_numbers_double() {
+    cs* data = R"(
+    [0, 1, -1, -2147483648, 2147483647, 4294967295,
+        -0.0, 1.2345, -1.2345,
+       2.225073858507201e-308, 2.2250738585072014e-308, 1.7976931348623157e308]
+    )";
+    test_reader("test9.json", data, [] (JSON* json) {
+        r64 expect_s[] = {0, 1, -1, -2147483648, 2147483647, 4294967295,
+            0, 1.2345, -1.2345,
+            2.225073858507201e-308, 2.2250738585072014e-308, 1.7976931348623157e308};
+        r64* pexpect = expect_s;
+        JSON array;
+        JsonValueType type;
+        JsonError err = json_reader_open_array(json, &array);
+        assert(err == JsonError_ok);
+        for (;;) {
+            err = json_reader_read_array(&array, &type);
+            if (err == JsonError_not_found) { break; }
+            assert(err == JsonError_ok);
+            r64 value;
+            err = json_reader_read_numberd(&array, &value);
+            assert(err == JsonError_ok);
+            // printf("expect: %.39g, actual: %.39g\n", *pexpect, value);
+            assert(abs(value - *pexpect++) < 1e-12);
+        }
+    });
+}
+
+
 int main(int argc, const char* argv[]) {
-    test1();
-    test2();
-    test3();
-    test4();
-    test5();
-    test6();
+    test1_hello();
+    test2_objects();
+    test3_arrays();
+    test4_nulls();
+    test5_booleans();
+    test6_chunked_read();
+    test7_numbers_i32();
+    test8_numbers_i64();
+    test9_numbers_double();
 
     return 0;
 }
