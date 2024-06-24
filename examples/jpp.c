@@ -5,7 +5,7 @@
 
 
 static const char _usage[] =
-    "usage: jpp [-i INDENT] [-b BUFSIZE] <file>\n"
+    "usage: jpp [-i INDENT] [-b BUFSIZE] [<file>]\n"
     ;
 
 
@@ -33,6 +33,7 @@ typedef struct {
 
 
 static const int _DefaultIndent = INT_MIN;
+static const size_t _DefaultBufSize = 1024;
 static JsonError jfilter_value(JSON* jin, JSON* jout, Context* context);
 
 
@@ -175,13 +176,9 @@ jfilter_value(JSON* jin, JSON* jout, Context* context) {
 
 static int
 parse_args(int argc, const char* argv[], Context* context) {
-    if (argc < 2) {
-        printf(_usage);
-        return 0;
-    }
-
     context->filename_count = 0;
     context->indent_size = _DefaultIndent;
+    context->bufsize = _DefaultBufSize;
 
     int i = 1;
     const char* arg = argv[i];
@@ -263,13 +260,16 @@ parse_args(int argc, const char* argv[], Context* context) {
         return 1;
     }
 
+    if (context->filename_count == 0) {
+        context->filenames[context->filename_count++] = "-";
+    }
+
     return 0;
 }
 
 
 int main(int argc, const char* argv[]) {
     Context context;
-    context.bufsize = 1000;
     context.nesting = 0;
     context.file_out = stdout;
 
