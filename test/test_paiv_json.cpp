@@ -351,6 +351,31 @@ test9_numbers_double() {
 }
 
 
+static void
+test10_consume_values() {
+    cs* data = R"(
+    {"true":true, "false":false, "null":null, "num42":42,
+        "num-17":-17, "str": "string\n\n \u0031 \u0033",
+        "arr": [1,35,"7",{}, null], "obj":{"inner":{}}}
+    )";
+    test_reader("test10.json", data, [] (JSON* json) {
+        JSON object;
+        JsonValueType type;
+        JsonError err = json_reader_open_object(json, &object);
+        assert(err == JsonError_ok);
+        char buf[100];
+        for (;;) {
+            sz nbuf = sizeof(buf);
+            err = json_reader_read_object(&object, &nbuf, buf, &type);
+            if (err == JsonError_not_found) { break; }
+            assert(err == JsonError_ok);
+            err = json_reader_consume_value(&object);
+            assert(err == JsonError_ok);
+        }
+    });
+}
+
+
 int main(int argc, const char* argv[]) {
     test1_hello();
     test2_objects();
@@ -361,6 +386,7 @@ int main(int argc, const char* argv[]) {
     test7_numbers_i32();
     test8_numbers_i64();
     test9_numbers_double();
+    test10_consume_values();
 
     return 0;
 }

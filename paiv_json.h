@@ -494,7 +494,9 @@ _json_parser_consume_string(JSON* _, FILE* fp) {
             case 2: {
                 size_t i;
                 for (i = 0; i < 4; ++i) {
-                    int c = fgetc(fp);
+                    if (i != 0) {
+                        c = fgetc(fp);
+                    }
                     if (c == EOF) {
                         return JsonError_eof;
                     }
